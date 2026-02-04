@@ -1,0 +1,16 @@
+# Ignore everything
+*
+# But these files
+!.gitignore
+!.gitattributes
+!README.md
+!LICENSE
+!CMakeLists.txt
+!partitions.csv
+!sdkconfig
+!build.sh
+# And these directories
+!build/
+!components/
+!main/
+!partitions/

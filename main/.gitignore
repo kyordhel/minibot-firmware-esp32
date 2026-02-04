@@ -1,0 +1,11 @@
+# Ignore everything
+*
+# But these files
+!.gitignore
+!.gitattributes
+!component.mk
+!CMakeLists.txt
+!behaviors.h
+!behaviors.cpp
+!main.cpp
+!Kconfig.projbuild

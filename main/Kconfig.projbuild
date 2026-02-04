@@ -1,0 +1,320 @@
+menu "Minibot Configuration"
+    orsource "$IDF_PATH/examples/common_components/env_caps/$IDF_TARGET/Kconfig.env_caps"
+
+    menu "I2C Bus"
+        config I2C_SDA
+            int "SDA GPIO pin"
+            range ENV_GPIO_RANGE_MIN ENV_GPIO_OUT_RANGE_MAX
+            default 21
+            help
+                GPIO number for I2C data line.
+
+        config I2C_SCL
+            int "SCL GPIO pin"
+            range ENV_GPIO_RANGE_MIN ENV_GPIO_OUT_RANGE_MAX
+            default 22
+            help
+                GPIO number for I2C clock line.
+
+        config I2C_FREQUENCY
+            int "I2C bus frequency"
+            default 400000
+            help
+                Speed of I2C Master device
+    endmenu
+
+    menu "Wireless configuration"
+        choice WIFI_MODE
+            prompt "WiFi operation mode"
+            default WIFI_MODE_AP
+            help
+                The operation mode of the wireless device which
+                can be an Access Point or a client
+
+            config WIFI_MODE_AP
+                bool   "Wireless Access Point"
+                help
+                    Select this to make the Minibot to host its
+                    own independent network
+
+            config WIFI_MODE_CLIENT
+                bool "Client device"
+                help
+                    Select this to make the Minibot to connect
+                    to an existing network
+        endchoice
+
+        config WIFI_SSID
+            string "SSID of the wireless network"
+            default "Minibot" if WIFI_MODE_AP
+            default "BioroboticsLab"
+            help
+                Name of the wireless network to connect to
+
+        if !WIFI_AUTH_OPEN
+            config WIFI_PASS
+                string "Password for the wireless network"
+                default "12345678" if WIFI_MODE_AP
+                help
+                    The password of the wireless network. An
+                    empty or invalid password (less than 8
+                    chars) will leave set the security to open
+                    in AP mode.
+        endif
+
+        if WIFI_MODE_AP
+            choice WIFI_AUTH
+                prompt "Security (encryption) of the network"
+                default WIFI_AUTH_WPA_WPA2
+                help
+                    The security of encryption of the network
+
+            config WIFI_AUTH_OPEN
+                bool "Open"
+            config WIFI_AUTH_WEP
+                bool "WEP"
+            config WIFI_AUTH_WPA
+                bool "WPA"
+            config WIFI_AUTH_WPA2
+                bool "WPA2"
+            config WIFI_AUTH_WPA3
+                bool "WPA3"
+            config WIFI_AUTH_WPA_WPA2
+                bool "WPA/WPA2"
+            config WIFI_AUTH_WPA2_WPA3
+                bool "WPA2/WPA3"
+            endchoice
+        endif
+
+        config WIFI_ADDR
+            string "IP address"
+            default ""            if WIFI_MODE_CLIENT
+            default "192.168.1.1" if WIFI_MODE_AP
+            help
+                The IPv4 address of the device. It is required
+                in ap mode, whilst in client mode can be empty
+                or absent to get an automatic IP address from
+                the DHCP server.
+
+        config WIFI_MASK
+            string "Network mask"
+            default ""            if WIFI_MODE_CLIENT
+            default "255.255.255.0" if WIFI_MODE_AP
+
+        config WIFI_GATE
+            string "Gateway IP address"
+            default ""            if WIFI_MODE_CLIENT
+            default "192.168.1.1" if WIFI_MODE_AP
+            help
+                Gateway address, if any.
+
+
+        config WIFI_DNS
+            string "DNS server IP address"
+            default ""            if WIFI_MODE_CLIENT
+            default "192.168.1.1" if WIFI_MODE_AP
+            help
+                A comma-separated list of DNS servers, if any.
+                Not used at all.
+
+
+        config WIFI_HOST
+            string  "Hostname"
+            default "minibot.local"
+            help
+                The name of the device in the network
+    endmenu
+
+    menu "Base configuration"
+        config  PWM_MIN
+            int     "Minimum PWM cap"
+            default 1800
+            help
+                The motor driver's PWM ranges between 0 and
+                ±3600 (100%). However, the motors remain
+                inoperative for with a duty cycle smaller
+                than 50%. PWM_MIN allows to define the offset
+                in which motors are unresponsive and defaults
+                to 1800 (50% duty cycle) when unset. This value
+                affects all movement functions such as
+
+                set_pwm(l, r, f, b)
+
+                and all the other functions that rely, including
+                the PID control.
+
+        config  PWM_MAX
+            int     "Maximum PWM cap"
+            default 3000
+            help
+                When pushing the motors to full speed the
+                dynamics (angular momentum) may become an
+                issue to perform position control on the
+                minibot. PWM_MAX limits the maximum value
+                sent to the driver, proportionally scalling
+                all movement functions such as
+
+                set_pwm(l, r, f, b)
+
+                and its dependants. It defaults to 3000 when
+                unset and should be adjusted dynamically when
+                the battery is low.
+
+
+        menu "Position control PID constants"
+            config PCTRL_KP
+                string  "Proportional"
+                default "0.002"
+                help
+                    Movement functions rotate, move_y, move_y,
+                    and move_xyt, use a PID distance (position)
+                    control to reach the desired goal. PCTRL_KP,
+                    PCTRL_KI, and PCTRL_KD allow to fine tune
+                    the Proportional, Integral, and Derivative
+                    constants of the position control.
+
+            config PCTRL_KI
+                string  "Integral"
+                default "0.000001"
+                help
+                    Movement functions rotate, move_y, move_y,
+                    and move_xyt, use a PID distance (position)
+                    control to reach the desired goal. PCTRL_KP,
+                    PCTRL_KI, and PCTRL_KD allow to fine tune
+                    the Proportional, Integral, and Derivative
+                    constants of the position control.
+
+            config PCTRL_KD
+                string  "Derivative"
+                default "0.0002"
+                help
+                   Movement functions rotate, move_y, move_y,
+                    and move_xyt, use a PID distance (position)
+                    control to reach the desired goal. PCTRL_KP,
+                    PCTRL_KI, and PCTRL_KD allow to fine tune
+                    the Proportional, Integral, and Derivative
+                    constants of the position control.
+        endmenu
+
+        menu "Speed control PID constants"
+            config SCTRL_KP
+                string  "Proportional"
+                default "0.0"
+                help
+                    Movement function set_speed(l, r, f, b),
+                    use a PID speed control to keep the desired
+                    speeds steady. SCTRL_KP, SCTRL_KI, and
+                    SCTRL_KD allow to fine tune the
+                    Proportional, Integral, and Derivative
+                    constants of the speed control.
+
+            config SCTRL_KI
+                string   "Integral"
+                default "0.0"
+                help
+                    Movement function set_speed(l, r, f, b),
+                    use a PID speed control to keep the desired
+                    speeds steady. SCTRL_KP, SCTRL_KI, and
+                    SCTRL_KD allow to fine tune the
+                    Proportional, Integral, and Derivative
+                    constants of the speed control.
+
+            config SCTRL_KD
+                string  "Derivative"
+                default "0.0"
+                help
+                    Movement function set_speed(l, r, f, b),
+                    use a PID speed control to keep the desired
+                    speeds steady. SCTRL_KP, SCTRL_KI, and
+                    SCTRL_KD allow to fine tune the
+                    Proportional, Integral, and Derivative
+                    constants of the speed control.
+        endmenu
+
+
+        config MOVE_MS_MIN
+            int "Minimum execution time for movement functions"
+            default 1000
+            help
+                Movement functions such as move_x, move_y,
+                rotate, and mv may stall when the battery is low
+                or the base gets disconnected so a reasonable
+                timeout is calculated for such movements.
+                MOVE_MS_MIN and MOVE_MS_MAX set the minimum and
+                maximum time alloted for movement functions to
+                complete, in milliseconds.
+
+                Acceptable values are [-1, 2^31) where zero
+                gives no offset to the automatic calculation
+                and -1 will make functions to block indefinitely
+                until the movement is completed. Default is 1000.
+
+
+        config MOVE_MS_MAX
+            int "Maximum execution time for movement functions"
+            default 3000
+            help
+                Movement functions such as move_x, move_y,
+                rotate, and mv may stall when the battery is low
+                or the base gets disconnected so a reasonable
+                timeout is calculated for such movements.
+                MOVE_MS_MIN and MOVE_MS_MAX set the minimum and
+                maximum time alloted for movement functions to
+                complete, in milliseconds.
+
+                Acceptable values are [-1, 2^31) where any value
+                smaller than MOVE_MS_MIN gives no additional
+                time to the movement whilst -1 will make
+                functions to # block indefinitely until the
+                movement is completed. Default is 3000.
+    endmenu
+
+
+    menu "Sensors configuration"
+        config SEN_LIGHT
+            string  "Light sensor angles"
+            default "0,315,270,225,180,135,90,45"
+            help
+                The angles in which the LIGHT sensors
+                are positioned as a comma-separated list.
+
+                Up to EIGHT (8) sensors are read, their values
+                normalized to [0, 1]. A channel/sensor can be
+                skipped with a value of -1 when a sensor is not
+                connected or malfunctioning.
+
+                All values must be unsigned angles in DEGREES
+                in the range [0,360).
+
+        config SEN_DIST
+            string  "Distance sensor angles"
+            default "120, 90, 60, 30, 0, 330, -1, -1, 300, 270, 240, 210, 180, 150, -1, -1"
+            help
+                The angles in which the DISTANCE sensors
+                are positioned as a comma-separated list.
+
+                Up to EIGHT (16) sensors are read, their values
+                normalized to [0, 1]. A channel/sensor can be
+                skipped with a value of -1 when a sensor is not
+                connected or malfunctioning. Tipycally only the
+                first 6 on each I2C ADC are connected.
+
+                All values must be unsigned angles in DEGREES
+                in the range [0,360).
+
+        config SEN_FLOOR
+            string  "Floor sensor read order"
+            default "3,2,1,0"
+            help
+                The ORDER in which the FLOOR sensors are read
+                as a comma-separated list.
+
+                Up to EIGHT (8) sensors are read, their values
+                normalized to [0, 1]. A channel/sensor can be
+                skipped with a value of -1 when a sensor is not
+                connected or malfunctioning.
+
+                All values are integers in range [0,7].
+
+    endmenu
+endmenu
