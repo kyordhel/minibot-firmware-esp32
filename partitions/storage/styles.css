@@ -1,0 +1,203 @@
+*{
+	box-sizing:          border-box;
+}
+
+html{
+	margin:              0;
+	padding:             1em;
+	width:               100%;
+	text-align:          center;
+	overflow:            hidden;
+	box-sizing:          border-box;
+}
+
+body{
+	margin:              0 auto;
+	max-width:           960px;
+	height:              100vh;
+	text-align:          left;
+
+	display:             grid;
+	grid-template-columns: 1fr 1fr;
+	grid-template-areas: "left right"
+	                     "log log";
+	grid-template-rows:  min-content 1fr;
+	column-gap:          1em;
+	row-gap:             1em;
+	overflow:            hidden;
+}
+
+.ctrlsection{
+	margin:              0;
+	/*width:               50%;*/
+	background-color:    #cff;
+	grid-area:           left;
+	overflow:            hidden;
+}
+
+.senssection{
+	margin:              0;
+	grid-area:           right;
+	/*width:               50%;*/
+	background-color:    #ffc;
+	overflow:            hidden;
+}
+
+.logsection{
+	margin:              0;
+	width:               100%;
+	grid-area:           log;
+	grid-column:         span 2;
+	/*background-color: #f1f1f1;*/
+	background-color:    #fcf;
+	overflow:            hidden;
+}
+
+.logcontainer{
+	height:              100%;
+	max-height:          100%;
+	overflow:            hidden scroll;
+}
+
+button{
+	border-radius:       6px;
+	box-shadow:          rgba(0, 0, 0, 0.3) 1px 2px 4px;
+}
+
+.diagram{
+	max-width:           100%;
+	max-height:          100%;
+	padding-top:         100%;
+	position:            relative;
+}
+
+.diagram > img{
+	position:            absolute;
+	width:               100%;
+	height:              100%;
+	max-width:           100%;
+	top:                 50%;
+	left:                50%;
+	transform:           translate(-50%, -50%);
+	object-fit:          cover;
+	overflow:            hidden;
+}
+
+
+#batt{
+	position:            absolute;
+	top:                 50%;
+	left:                50%;
+	transform:           translate(-50%, -50%);
+	color:               white;
+	font-size:           xx-large;
+	text-align:          center;
+}
+
+.abspos{
+	position:            absolute;
+}
+
+.big{
+	font-size:           x-large;
+}
+
+.padded{
+	padding:             0.125em;
+}
+
+.gap1em{
+	gap:                 1em;
+}
+
+.container{
+	margin:              0;
+	padding:             0;
+	width:            100%;
+	display:             flex;
+	flex-wrap:           wrap;
+	flex-direction:      row;
+}
+
+
+.container > .row {
+	margin:              0;
+	padding:             0;
+	display:             flex;
+	flex:                1 1 100%;
+	flex-flow:           row wrap;
+}
+
+.container > .row > .eqz {
+	flex:                1 1 0;
+}
+
+.stopbutton{
+	padding:             0.25em;
+	width:               100%;
+	/*flex:                1 0 0;*/
+	font-size:           xx-large;
+	color:               ccc;
+	background-color:    #900;
+	border:              3px solid #c00;
+	border-radius:       6px;
+	box-shadow:          rgba(0, 0, 0, 0.3) 1px 2px 4px;
+}
+
+.stopbutton:hover{
+	font-weight:         bold;
+	color:               ff6;
+	background-color:    #c00;
+}
+
+.bluebutton{
+	color:               fff;
+	background-color:    #009;
+	border:              3px solid #00c;
+
+}
+.bluebutton:hover{
+	font-weight:         bold;
+	color:               fff;
+	background-color:    #00c;
+	border:              3px solid #00f;
+}
+
+.greenbutton{
+	color:               fff;
+	background-color:    #090;
+	border:              3px solid #0c0;
+}
+
+.greenbutton:hover{
+	font-weight:         bold;
+	background-color:    #0c0;
+	border:              3px solid #0f0;
+}
+
+.formgrid{
+	margin-top:          1em;
+	width:               100%;
+
+	display:             grid;
+	grid-template-rows:  1fr 1fr;
+	grid-template-columns: 5em auto 5em;
+	grid-template-areas: "legend"
+	                     "label control btn";
+	column-gap:          0.25em;
+	row-gap:             0.125em;
+}
+
+.formgrid > p {
+	margin:              0;
+	padding:             0;
+	grid-column:         span 3;
+}
+
+.formgrid > select {
+	grid-column:         span 2;
+}
+
+.hidden{
+	visibility:          hidden;
+}

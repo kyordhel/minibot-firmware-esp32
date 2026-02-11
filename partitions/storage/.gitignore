@@ -1,0 +1,14 @@
+# Ignore everything
+*
+# But these files
+!*.gitignore
+!*.gitattributes
+# But these filetypes
+!*.htm*
+!*.js
+!*.css
+!*.jpg
+!*.png
+!*.svg
+# Even if they are in subdirectories
+!**/
