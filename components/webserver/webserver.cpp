@@ -154,7 +154,7 @@ bool WebServer::handleCommandRequest(int sckt, const char* reqstr){
 
 	memset(&req,  0, sizeof(req));
 	memset(&rply, 0, sizeof(rply));
-	ESP_LOGI(TAG, "handleCommandRequest 0");
+	// ESP_LOGI(TAG, "handleCommandRequest 0");
 	// "/minibot?cmd=<command>&args=<space-separated-args>"
 
 	// 1. Retrieve command
@@ -164,7 +164,7 @@ bool WebServer::handleCommandRequest(int sckt, const char* reqstr){
 		req.cmd[j+1] = 0;
 	}
 
-	ESP_LOGI(TAG, "handleCommandRequest 1");
+	// ESP_LOGI(TAG, "handleCommandRequest 1");
 	// 2. Retrieve arguments
 	char* cc = (char*)strstr(reqstr, "&args=");
 	if(cc){
@@ -177,25 +177,25 @@ bool WebServer::handleCommandRequest(int sckt, const char* reqstr){
 		}
 	}
 
-	ESP_LOGI(TAG, "handleCommandRequest 2");
-	ESP_LOGI(TAG, "req.cmd=%s | req.sargs=%s\n", req.cmd, req.sargs);
+	// ESP_LOGI(TAG, "handleCommandRequest 2");
+	// ESP_LOGI(TAG, "req.cmd=%s | req.sargs=%s\n", req.cmd, req.sargs);
 	if( !handleCommand ){ // No handle, execution automatically fails
 		sendResult(sckt, req, rply, false);
 		// send500(sckt, "Unimplemented. WebServer::handleCommand is NULL");
 		return false;
 	}
 
-	ESP_LOGI(TAG, "handleCommandRequest 3");
+	// ESP_LOGI(TAG, "handleCommandRequest 3");
 	// Command is any of {stop, mv, speed, pwm, behavior, sensors}
 	res = handleCommand(req, rply);
-	ESP_LOGI(TAG, "handleCommandRequest 4");
+	// ESP_LOGI(TAG, "handleCommandRequest 4");
 	sendResult(sckt, req, rply, res);
 	return res;
 }
 
 
 void WebServer::sendResult(int sckt, const request_t& req, const reply_t& rply, bool result){
-	ESP_LOGI(TAG, "sendResult");
+	// ESP_LOGI(TAG, "sendResult");
 
 	write_ok_header(txBuff, sizeof(txBuff), "application/json", 0, false);
 	char* cc = txBuff + strlen(txBuff);
@@ -206,7 +206,7 @@ void WebServer::sendResult(int sckt, const request_t& req, const reply_t& rply, 
 	else
 		sprintf(cc, "{\"req\":\"%s\",\"res\":", req.cmd);
 	cc = txBuff + strlen(txBuff);
-	ESP_LOGI(TAG, "sendResult | bcc=%s", bcc);
+	// ESP_LOGI(TAG, "sendResult | bcc=%s", bcc);
 	if(!result)
 		sprintf(cc, "null}\r\n");
 	else if( !strcmp(req.cmd, "stop") )
@@ -242,7 +242,7 @@ void WebServer::sendResult(int sckt, const request_t& req, const reply_t& rply, 
 	}
 	else
 		sprintf(cc, "\"%s\"}\r\n", rply.cargs);
-	ESP_LOGI(TAG, "sendResult | bcc=%s", bcc);
+	// ESP_LOGI(TAG, "sendResult | bcc=%s", bcc);
 	sendTo(sckt, txBuff, strlen(txBuff));
 
 }

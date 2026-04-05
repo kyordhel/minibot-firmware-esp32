@@ -631,8 +631,8 @@ CONFIG_WIFI_HOST="minibot.local"
 #
 # Base configuration
 #
-CONFIG_PWM_MIN=1800
-CONFIG_PWM_MAX=3000
+CONFIG_PWM_MIN=1900
+CONFIG_PWM_MAX=3200
 
 #
 # Position control PID constants

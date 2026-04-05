@@ -160,7 +160,7 @@ bool TcpServerBase::sendTo(const int sckt, const void* data, size_t length){
 		sent = send(sckt, uidata + (length - pending), pending, 0);
 		if( (sent < 0) && (errno != EINPROGRESS) && (errno != EAGAIN) && (errno != EWOULDBLOCK) )
 			return false;
-		ESP_LOGI(TAG, "sendTo %lu bytes sent", sent);
+		// ESP_LOGI(TAG, "sendTo %lu bytes sent", sent);
 		pending-= sent;
 	}
 	return true;
@@ -170,7 +170,7 @@ bool TcpServerBase::sendTo(const int sckt, const void* data, size_t length){
 void tcpServerTask(void* args){
 	TcpServerBase* server = (TcpServerBase*)args;
 	if( !server ){
-		ESP_LOGI(TAG, "ERROR");
+		ESP_LOGE(TAG, "ERROR");
 		vTaskDelete(NULL);
 		return;
 	}

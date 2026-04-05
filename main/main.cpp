@@ -218,40 +218,42 @@ bool tcp_server_command_handler(const minibot::tcpserver::request_t& req, minibo
 	return false;
 }
 
+
 bool web_server_command_handler(const minibot::webserver::request_t& req, minibot::webserver::reply_t& rply){
 	if( !mb || !sen) return false;
-	ESP_LOGI(TAG, "web_server_command_handler 1");
-	ESP_LOGI(TAG, "req.cmd=%s | req.nfargs=%d | req.fargs={%f, %f, %f, %f} ", req.cmd, req.nfargs, req.fargs[0], req.fargs[1], req.fargs[2], req.fargs[3]);
+	// ESP_LOGI(TAG, "web_server_command_handler 1");
+	// ESP_LOGI(TAG, "req.cmd=%s | req.nfargs=%d | req.fargs={%f, %f, %f, %f} ", req.cmd, req.nfargs, req.fargs[0], req.fargs[1], req.fargs[2], req.fargs[3]);
 
 	if( !strcmp(req.cmd, "stop") ){
 		mb->stop();
 		return true;
 	}
 	else if( !strcmp(req.cmd, "mv") ){
+		ESP_LOGI(TAG, "req.cmd=%s | req.nfargs=%d | req.fargs={%f, %f} ", req.cmd, req.nfargs, req.fargs[0], req.fargs[1]);
 		mb->mv(req.fargs[0], req.fargs[1], rply.fargs[0], rply.fargs[1]);
-		// rply.nfargs = 2;
+		ESP_LOGI(TAG, "rply.fargs={%f, %f} ", rply.fargs[0], rply.fargs[1]);
 		return true;
 	}
 	else if( !strcmp(req.cmd, "speed") ){
-	ESP_LOGI(TAG, "web_server_command_handler 2");
+	// ESP_LOGI(TAG, "web_server_command_handler 2");
 		if( req.nfargs == 2 )
 			mb->setPwm(req.fargs[0], rply.fargs[1]);
 		else if( req.nfargs == 4 )
 			mb->setPwm(req.fargs[0], req.fargs[1], req.fargs[2], req.fargs[3]);
-		ESP_LOGI(TAG, "web_server_command_handler 3");
+		// ESP_LOGI(TAG, "web_server_command_handler 3");
 		mb->getPwm(rply.fargs[0], rply.fargs[1], rply.fargs[2], rply.fargs[3]);
-		ESP_LOGI(TAG, "web_server_command_handler 4");
+		// ESP_LOGI(TAG, "web_server_command_handler 4");
 		return true;
 	}
 	else if( !strcmp(req.cmd, "pwm") ){
-	ESP_LOGI(TAG, "web_server_command_handler 2");
+	// ESP_LOGI(TAG, "web_server_command_handler 2");
 		if( req.nfargs == 2 )
 			mb->setSpeed(req.fargs[0], rply.fargs[1]);
 		else if( req.nfargs == 4 )
 			mb->setSpeed(rply.fargs[0], rply.fargs[1], rply.fargs[2], rply.fargs[3]);
-		ESP_LOGI(TAG, "web_server_command_handler 3");
+		// ESP_LOGI(TAG, "web_server_command_handler 3");
 		mb->getSpeed(rply.fargs[0], rply.fargs[1], rply.fargs[2], rply.fargs[3]);
-		ESP_LOGI(TAG, "web_server_command_handler 4");
+		// ESP_LOGI(TAG, "web_server_command_handler 4");
 		return true;
 	}
 	else if( !strcmp(req.cmd, "behavior") ){
@@ -260,15 +262,15 @@ bool web_server_command_handler(const minibot::webserver::request_t& req, minibo
 		return true;
 	}
 	else if( !strcmp(req.cmd, "sensors") ){
-	ESP_LOGI(TAG, "web_server_command_handler 2");
+	// ESP_LOGI(TAG, "web_server_command_handler 2");
 		sen->readDistance(rply.all.dist);
-		ESP_LOGI(TAG, "web_server_command_handler 3");
+		// ESP_LOGI(TAG, "web_server_command_handler 3");
 		sen->readFloor(rply.all.floor);
-		ESP_LOGI(TAG, "web_server_command_handler 4");
+		// ESP_LOGI(TAG, "web_server_command_handler 4");
 		sen->readLight(rply.all.light);
-		ESP_LOGI(TAG, "web_server_command_handler 5");
+		// ESP_LOGI(TAG, "web_server_command_handler 5");
 		mb->readBatt(rply.all.batt);
-		ESP_LOGI(TAG, "web_server_command_handler 6");
+		// ESP_LOGI(TAG, "web_server_command_handler 6");
 		return true;
 	}
 	return false;

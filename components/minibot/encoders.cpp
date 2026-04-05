@@ -1,4 +1,5 @@
 #include "encoders.h"
+#include <cmath>
 
 using namespace minibot;
 
@@ -13,6 +14,10 @@ Encoders::Encoders(int32_t f, int32_t b, int32_t l, int32_t r)
 ** ** ************************************************************/
 int32_t Encoders::average() const{
 	return (front + back + left + right) / 4;
+}
+
+uint32_t Encoders::absAverage() const{
+	return (std::abs(front) + std::abs(back) + std::abs(left) + std::abs(right)) / 4;
 }
 
 /* ** *************************************************************

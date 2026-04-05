@@ -192,7 +192,8 @@ void Base::mv(float distance, float angle, float& od, float& oa){
 
 float Base::moveY(float distance) {
 	Encoders e0, ek, ef, err, err_, errI, errD;
-	float pwmf, pwmb;
+	float pwmf, pwmb, errSum;
+	// Motors f and b advance towards y
 	float estSteps = distance * 6756.76f; // 0.185m = 1250 pulses
 
 	stop();
@@ -210,10 +211,11 @@ float Base::moveY(float distance) {
 		errI += err;       // Integral
 		errD = err - err_; // Differential
 
-		pwmf = dKP * err.front + dKI * errI.front + dKD * errD.front;
-		pwmb = dKP * err.back  + dKI * errI.back  + dKD * errD.back;
+		pwmf = 0.85 * dKP * err.front + dKI * errI.front + dKD * errD.front;
+		pwmb = 0.85 * dKP * err.back  + dKI * errI.back  + dKD * errD.back;
 
-		if ((std::abs(err.front + err.back) / 2.0f) < 200.0f) break;
+		errSum = std::abs(err.front) + std::abs(err.back);
+		if ( (errSum / 2.0f) < 100.0f ) break;
 
 		setPwm(0, 0, pwmf, pwmb);
 		vTaskDelay( pdMS_TO_TICKS(10) );
@@ -223,34 +225,43 @@ float Base::moveY(float distance) {
 	waitStop();
 
 	Encoders diff = readEncodersAbs() - e0;
-	return (diff.front + diff.back) / 18520.0f;
+	return (diff.front + diff.back) / (2 * 6756.76f);
 }
 
 
 float Base::moveX(float distance) {
 	Encoders e0, ek, ef, err, err_, errI, errD;
-	float pwml, pwmr;
+	float pwml, pwmr, errSum;
 	float estSteps = distance * 6756.76f; // 0.185m = 1250 pulses
 
 	stop();
 	abortMove = false;
 
 	e0 = readEncodersAbs();
-	ef = e0 + Encoders(estSteps, estSteps, 0, 0);
+	// Motors l and r advance towards -x
+	ef = e0 + Encoders(0, 0, estSteps, estSteps);
+	printf("Encoders: %ld %ld %ld %ld\n", e0.front, e0.back, e0.left, e0.right);
+	printf("EncFinal: %ld %ld %ld %ld\n", ef.front, ef.back, ef.left, ef.right);
 
 	int maxTime = estimateMoveTimeMs(estSteps) + 1;
 
 	for (int k = 0; (k < maxTime) && !abortMove; k += 10) {
 		Encoders ek = readEncodersAbs();
 		err_ = err;        // Backup (previous error)
-		err = ef - ek;     // Current error
-		errI += err;       // Integral
+		err  = ek - ef;    // Current error
+		errI+= err;        // Integral
 		errD = err - err_; // Differential
 
-		pwml = dKP * err.front + dKI * errI.front + dKD * errD.front;
-		pwmr = dKP * err.back  + dKI * errI.back  + dKD * errD.back;
+		printf("ek:  % 4ld % 4ld % 4ld % 4ld\n", ek.front, ek.back, ek.left, ek.right);
+		printf("err: % 4ld % 4ld % 4ld % 4ld\n", err.front, err.back, err.left, err.right);
+		printf("ef:  % 4ld % 4ld % 4ld % 4ld\n", ef.front, ef.back, ef.left, ef.right);
+		pwml = 0.85 * dKP * err.left  + dKI * errI.left  + dKD * errD.left;
+		pwmr = 0.85 * dKP * err.right + dKI * errI.right + dKD * errD.right;
 
-		if ((std::abs(err.front + err.back) / 2.0f) < 200.0f) break;
+		errSum = std::abs(err.left) + std::abs(err.right);
+		printf("pwm: % 1.3f % 1.3f\n", pwml, pwmr);
+		printf("errsum: %0.1lf\n", errSum);
+		if ( (errSum / 2.0f) < 100.0f ) break;
 
 		setPwm(pwml, pwmr, 0, 0);
 		vTaskDelay( pdMS_TO_TICKS(10) );
@@ -259,39 +270,44 @@ float Base::moveX(float distance) {
 	stop();
 	waitStop();
 
+	Encoders ef2 = readEncodersAbs();
 	Encoders diff = readEncodersAbs() - e0;
-	return (diff.front + diff.back) / 18520.0f;
+	printf("EncFinal: %ld %ld %ld %ld\n", ef2.front, ef2.back, ef2.left, ef2.right);
+	printf("EncDiff:  %ld %ld %ld %ld\n", diff.front, diff.back, diff.left, diff.right);
+	return (diff.left + diff.right) / (2 * 6756.76f);
 }
 
 
 float Base::rotate(float angle) {
 	Encoders e0, ek, ef, err, err_, errI, errD;
 	float pwmf, pwmb, pwml, pwmr, errSum;
-	float estSteps = angle * 397.89f; // 2500 / 2π
+	float estSteps = angle * 620.0f;
 
 	stop();
 	abortMove = false;
 
 	e0 = readEncodersAbs();
-	printf("Encoders: %ld %ld %ld %ld\n", e0.front, e0.back, e0.left, e0.right);
-	ef = e0 + Encoders(-estSteps, estSteps, estSteps, estSteps);
+	// l,r<- f,b↓  =>  +f +l -b -r
+	ef = e0 + Encoders(-estSteps, estSteps, -estSteps, estSteps);
 
 	int maxTime = estimateMoveTimeMs(estSteps) + 1;
 
 	for (int k = 0; (k < maxTime) && !abortMove; k += 10) {
+	// while (!abortMove) {
 		Encoders ek = readEncodersAbs();
 		err_ = err;        // Backup (previous error)
-		err = ef - ek;     // Current error
-		errI += err;       // Integral
+		err  = ek - ef;    // Current error
+		errI+= err;        // Integral
 		errD = err - err_; // Differential
 
-		pwmf = 0.6f * dKP * err.front + dKI * errI.front + dKD * errD.front;
-		pwmb = 0.6f * dKP * err.back  + dKI * errI.back  + dKD * errD.back;
-		pwml = 0.6f * dKP * err.front + dKI * errI.front + dKD * errD.front;
-		pwmr = 0.6f * dKP * err.back  + dKI * errI.back  + dKD * errD.back;
+		pwmf = 0.7 * dKP * err.front + dKI * errI.front + dKD * errD.front;
+		pwmb = 0.7 * dKP * err.back  + dKI * errI.back  + dKD * errD.back;
+		pwml = 0.7 * dKP * err.front + dKI * errI.front + dKD * errD.front;
+		pwmr = 0.7 * dKP * err.back  + dKI * errI.back  + dKD * errD.back;
 
-		errSum = err.front - err.back - err.right + err.left;
-		if ((std::abs(errSum) / 4.0f) < 100.0f) break;
+		errSum = std::abs(err.front) + std::abs(err.back) + std::abs(err.left) + std::abs(err.right);
+		printf("errsum: %0.1lf\n", errSum);
+		if ( (errSum / 4.0) < 100.0f ) break;
 
 		setPwm(pwml, pwmr, pwmf, pwmb);
 		vTaskDelay( pdMS_TO_TICKS(10) );
@@ -300,19 +316,30 @@ float Base::rotate(float angle) {
 	stop();
 	waitStop();
 
-	Encoders diff = readEncodersAbs() - e0;
-	return (diff.front + diff.back) / 3040.0f;
+	// Encoders diff = readEncodersAbs() - e0;
+	Encoders ef2 = readEncodersAbs();
+	Encoders diff = ef2 - e0;
+	return (-diff.front + diff.back - diff.left + diff.right) / (620.0f * 4);
 }
 
 
 Encoders Base::readEncodersAbs() {
-	int16_t f, b, l, r;
-	if (!i2c->readFromMem(dev, DRV_M1_ENC_CNT_H, l)
-		|| !i2c->readFromMem(dev, DRV_M2_ENC_CNT_H, f)
-		|| !i2c->readFromMem(dev, DRV_M3_ENC_CNT_H, b)
-		|| !i2c->readFromMem(dev, DRV_M4_ENC_CNT_H, r)
+	union{
+		int16_t i16;
+		uint8_t i8[2];
+	} typedef edata;
+	// int16_t f, b, l, r;
+	edata f, b, l, r;
+	if (!i2c->readFromMem(dev, DRV_M1_ENC_CNT_H, &l.i8[0], 1)
+		|| !i2c->readFromMem(dev, DRV_M1_ENC_CNT_L, &l.i8[1], 1)
+		|| !i2c->readFromMem(dev, DRV_M2_ENC_CNT_H, &f.i8[0], 1)
+		|| !i2c->readFromMem(dev, DRV_M2_ENC_CNT_L, &f.i8[1], 1)
+		|| !i2c->readFromMem(dev, DRV_M3_ENC_CNT_H, &b.i8[0], 1)
+		|| !i2c->readFromMem(dev, DRV_M3_ENC_CNT_L, &b.i8[1], 1)
+		|| !i2c->readFromMem(dev, DRV_M4_ENC_CNT_H, &r.i8[0], 1)
+		|| !i2c->readFromMem(dev, DRV_M4_ENC_CNT_L, &r.i8[1], 1)
 	) return Encoders();
-	return Encoders(f, b, l, r);
+	return Encoders(f.i16, b.i16, l.i16, r.i16);
 }
 
 Encoders Base::readEncodersDt() {
