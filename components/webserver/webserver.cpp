@@ -40,12 +40,12 @@ protected:
 protected:
 	commandHandler_t handleCommand;
 	// 1380bytes is the max payload for any modern TCP package
-	// 1380bytes + 3bytes len + 4bytes crlf + NULL + pad
+	// 1380bytes = 3bytes len + data + 4bytes crlf + NULL + \0
 	char txBuff[1400];
 
 	// Following variables kept here to reduce stack size in task
 	char reqstr[256];   // Stores the current request (handleRcvData)
-	char filepath[255]; // Absolute path of the file being served (serveFile)
+	char filepath[256]; // Absolute path of the file being served (serveFile)
 };
 
 
@@ -131,18 +131,20 @@ bool WebServer::serveFile(int sckt, const char* file){
 
 
 	for(size_t pending = fileSize; pending > 0; pending-= bytesRead){
-		toRead = (pending < 1380) ? pending : 1380;
+		// 1380bytes = 3bytes len + data + 4bytes crlf + NULL + \0 => len(data) <= 1372
+		toRead = (pending < 1372) ? pending : 1372;
 		sprintf(txBuff, "%x\r\n", toRead);
 		preSize = strlen(txBuff);
 		bytesRead = fread(txBuff + preSize, 1, toRead, fp);
 		sprintf(txBuff + preSize + bytesRead, "\r\n");
 		if(!sendTo(sckt, txBuff, preSize + bytesRead + 2))
 			break;
+		taskYIELD();
 	}
 	sprintf(txBuff, "0\r\n\r\n");
 	sendTo(sckt, txBuff, 5);
 
-	ESP_LOGI(TAG, "Served file: %s (%lubytes)", filepath, fileSize);
+	ESP_LOGI(TAG, "Served file: %s (%0.2fkB)", filepath, fileSize/1024.0f);
 	fclose(fp);
 	return true;
 }
@@ -199,7 +201,7 @@ void WebServer::sendResult(int sckt, const request_t& req, const reply_t& rply, 
 
 	write_ok_header(txBuff, sizeof(txBuff), "application/json", 0, false);
 	char* cc = txBuff + strlen(txBuff);
-	char* bcc = cc;
+	// char* bcc = cc;
 
 	if(strlen(req.sargs) > 0)
 		sprintf(cc, "{\"req\":\"%s %s\",\"res\":", req.cmd, req.sargs);
