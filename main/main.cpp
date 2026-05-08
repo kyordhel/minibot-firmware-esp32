@@ -53,8 +53,9 @@ void app_main(void){
 	// sdistr_t  dist;
 	// sfloorr_t floor;
 	// slightr_t light;
+	uint8_t values[DIST_SENSOR_COUNT];
 
-	// while(1){
+	while(1){
 		// i2c->detect();
 		// printf("\n\n");
 		// vTaskDelay( pdMS_TO_TICKS(1000) );
@@ -68,12 +69,16 @@ void app_main(void){
 		// sen->readFloor(floor);
 		// for(uint8_t i = 0; i < 4; ++i) printf(" %0.2f", floor.data[i]);
 
-	// 	sen->readDistance(dist);
-	// 	printf("\nDist (%u):", dist.count);
-	// 	for(uint8_t i = 0; i < dist.count; ++i) printf(" (%0.0f, %0.2f)", dist.data[i].angle * 180 / 3.141592, dist.data[i].value);
+		// 	sen->readDistance(dist);
+		// 	printf("\nDist (%u):", dist.count);
+		// 	for(uint8_t i = 0; i < dist.count; ++i) printf(" (%0.0f, %0.2f)", dist.data[i].angle * 180 / 3.141592, dist.data[i].value);
 
-	// 	vTaskDelay( pdMS_TO_TICKS(1000) );
-	// }
+		sen->readDistanceRaw(values);
+		printf("\nDist:");
+		for(uint8_t i = 0; i < DIST_SENSOR_COUNT; ++i) printf(" % 3d", values[i]);
+
+		vTaskDelay( pdMS_TO_TICKS(1000) );
+	}
 
 	// mb->mv(0.1, 1);
 
@@ -84,8 +89,8 @@ void app_main(void){
 	setup_wifi();
 	ESP_LOGI(TAG, "Wifi setup complete");
 
-	tcpserver::start(9000, &tcp_server_command_handler);
-	ESP_LOGI(TAG, "Tcp server started");
+	// tcpserver::start(9000, &tcp_server_command_handler);
+	// ESP_LOGI(TAG, "Tcp server started");
 
 	webserver::start(&web_server_command_handler);
 	ESP_LOGI(TAG, "Web server started");

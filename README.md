@@ -32,8 +32,8 @@ source export.sh
 ## Build
 **After sourcing** the ESP IDF, execute the following commands:
 ```bash
-cd build
-idf.py build -C ..
+idf.py set-target esp32s3
+idf.py build
 ```
 
 The `idf.py` utility can be run from the directory project, but

@@ -60,15 +60,18 @@ async function updateSensors(){
 	}
 	var langle = Math.atan2(y, x);
 
-	for(var i = 0; i < dist.length; ++i){
-		imgobssens = document.getElementById(`obssens${i}`);
+	for(var j = 0; j < 12; ++j){
+		imgobssens = document.getElementById(`obssens${j}`);
+		if(imgobssens != null) imgobssens.classList.add("hidden");
+	}
+	for(var i = 0, j = 0; (i < dist.length) && (j < 12); ++i){
+		imgobssens = document.getElementById(`obssens${j}`);
 		if(imgobssens == null) continue;
-		if((dist[i][0] < 0) || (dist[i][1] < 0) || (dist[i][1] > 15)){
-			imgobssens.classList.add("hidden");
+		if((dist[i][0] < 0) || (dist[i][1] < 0) || (dist[i][1] > 0.2))
 			continue;
-		}
-		imgobssens.classList.remove("hidden")
+		imgobssens.classList.remove("hidden");
 		imgobssens.style.transform = `translate(-50%, -50%) rotate(${-dist[i][0]-1.5709}rad)`;
+		++j;
 	}
 
 	imglightsrc = document.getElementById("lightsrc");
