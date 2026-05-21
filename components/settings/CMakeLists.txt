@@ -1,4 +1,5 @@
 set(COMPONENT_REQUIRES
+	minibot
 	storage
 )
 

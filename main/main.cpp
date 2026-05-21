@@ -82,8 +82,8 @@ void app_main(void){
 
 	// mb->mv(0.1, 1);
 
-	// settings::load("settings.conf");
-	// ESP_LOGI(TAG, "Settings loaded");
+	settings::load("settings.conf");
+	ESP_LOGI(TAG, "Settings loaded");
 	storage::init();
 
 	setup_wifi();

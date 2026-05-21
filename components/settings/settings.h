@@ -4,6 +4,7 @@
 
 #include <string>
 #include <cstdint>
+#include "hal.h"
 
 namespace minibot::settings{
 // Wireless
@@ -17,9 +18,9 @@ extern std::string WIFI_GATE;
 extern std::string WIFI_DNS;
 
 // Sensors
-extern float       SEN_DIST[];
-extern float       SEN_LIGHT[];
-extern float       SEN_FLOOR[];
+extern float       SEN_DIST[DIST_SENSOR_COUNT];
+extern float       SEN_LIGHT[LIGHT_SENSOR_COUNT];
+extern uint8_t     SEN_FLOOR[FLOOR_SENSOR_COUNT];
 
 // Base control
 extern uint16_t PWM_MIN;
