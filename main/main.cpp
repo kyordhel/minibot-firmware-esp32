@@ -89,8 +89,8 @@ void app_main(void){
 	setup_wifi();
 	ESP_LOGI(TAG, "Wifi setup complete");
 
-	// tcpserver::start(9000, &tcp_server_command_handler);
-	// ESP_LOGI(TAG, "Tcp server started");
+	tcpserver::start(9000, &tcp_server_command_handler);
+	ESP_LOGI(TAG, "Tcp server started");
 
 	webserver::start(&web_server_command_handler);
 	ESP_LOGI(TAG, "Web server started");
