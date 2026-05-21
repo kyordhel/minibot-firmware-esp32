@@ -1,7 +1,7 @@
 # Ignore everything
 *
 # But these files
-!*.gitignore
-!*.gitattributes
+!.gitignore
+!.gitattributes
 # But these folders
 !storage/
