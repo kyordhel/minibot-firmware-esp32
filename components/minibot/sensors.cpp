@@ -278,7 +278,7 @@ bool Sensors::readDistance(sdistr_t& reading){
 		 * moreso without an fPU. Thus it has been replaced with a
 		 * O(1) lookup in a long array __VTD
 		 **************************************************************
-		 * voltage = 5.0f * value / 255.0f;
+		 * voltage = 5.0f * value / 256.0f;
 		 * if( (voltage < 0.33) || (voltage > 2.60) ){
 		 * 	reading.data[reading.count++].value = -1;
 		 * 	continue;
