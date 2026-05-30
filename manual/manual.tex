@@ -1,0 +1,476 @@
+% CHKTEX-FILE 1
+% CHKTEX-FILE 46
+\documentclass[letterpaper,10.5pt]{article}
+\include{setup/packages}
+\include{setup/document}
+\include{setup/colorboxes}
+
+\title{Minibot: guia de referencia rápida}
+\author{Mauricio Matamoros}
+
+\begin{document}
+\maketitle{}
+
+\section{Guía rápida:}
+El firmware está escrito en C/C++ y require del IDF framework de Espressif que está basado en FreeRTOS.\,
+La estructura de directorios se basa en la plantilla de aplicación de Espressif en \href{https://github.com/espressif/esp-idf}
+Se conseja revisar la documentación del \href{https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html}{Espressif IDF} para saber más sobre cómo instalar la plataforma.
+
+La guia rápida asume que se compila desde una distribución linux basada en debian. Aunque es posible desarrollar en sistemas windows, tendrá que revisar la documentación del IDF para saber cómo llevar a cabo una compilación cruzada.
+
+\subsection{Prerrequisitos}
+\begin{enumerate}
+	\item Instale los siguientes paquetes
+	\begin{Verbatim}[gobble=2]
+		sudo apt install git wget flex bison gperf python3 python3-pip python3-setuptools cmake
+		sudo apt install ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
+	\end{Verbatim}
+	\item Descargue e instale el Espressif esp-idf versión 5.5 en \texttt{\textasciitilde/esp32}
+	\begin{Verbatim}[gobble=2]
+		mkdir ~/esp32
+		cd ~/esp32
+		git clone -b v5.5 --depth 1 https://github.com/espressif/esp-idf.git
+		cd esp-idf
+		./install.sh
+	\end{Verbatim}
+
+	\item Importe el idf framework en la terminal. Esto debe hacerse \emph{SIEMPRE} antes de intentar compilar un proyecto para el ESP32.
+	\begin{Verbatim}[gobble=2]
+		source export.sh
+	\end{Verbatim}
+
+	\item Si no lo ha hecho, clone el repositorio con el framework del minibot
+	\begin{Verbatim}[gobble=2]
+		cd ~/esp32
+		git clone --depth 1 https://github.com/kyordhel/minibot-firmware-esp32.git minibot
+		cd minibot
+	\end{Verbatim}
+
+\end{enumerate}
+
+
+\subsection{Configuración y compilación}
+Después de importar el ESP IDF ejecute los siguientes comandos.
+\begin{Verbatim}[gobble=1]
+	idf.py set-target esp32s3
+	idf.py menuconfig
+\end{Verbatim}
+
+\begin{yellowbox}{ERROR:~NO SE ENCONTRÓ EL ARCHIVO \texttt{idf.py}}
+Ya sabía que esto iba a pasar. Usted olvidó importar el IDF de nuevo.
+	\begin{Verbatim}[gobble=2]
+		source /ruta/al/esp-idf/export.sh
+	\end{Verbatim}
+\end{yellowbox}
+
+El primer comando instruye al IDF indicando que el integrado objetivo es un ESP32-S3. Si usted cuenta con otro integrado, especifique el tipo de integrado a usar. El segundo comando abre la herramienta de configuración~del ESP~IDF.~Verá una ventana como la de la~\Cref{fig:menuconfig-main}.
+
+A continuación, navegue dentro de la herramienta de configuración a
+\emph{Minibot configuration} $\Rightarrow$
+\emph{Wireless configuration} $\Rightarrow$
+\emph{WiFi operation mode}
+y establezca el modo de conexión como cliente para que el Minibot se conecte a una red inalámbrica existente;
+tal como se muestra en las~\Cref{fig:menuconfig-main,fig:menuconfig-minibot,fig:menuconfig-wifi,fig:menuconfig-client}.
+
+El siguiente paso consiste en establecer el nombre de la red y la contraseña de la misma~(véase~\Cref{fig:menuconfig-ssid}).
+Si conoce la configuración de su red, se puede establecer una IP estática para facilitar el acceso al Minibot.
+Sin embargo, si prefiere usar la asignación dinámica de direcciones IP vía DHCP de su red, es necesario borrar las configuraciones de la misma como se ilustra en la~\Cref{fig:menuconfig-dhcp}.
+
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{0.5\textwidth}
+		\centering
+		\includegraphics[width=0.95\linewidth,height=45mm,keepaspectratio]{img/menuconfig-main.png}
+		\caption{Ventana principal}%
+		\label{fig:menuconfig-main}
+	\end{subfigure}%
+	\begin{subfigure}[b]{0.5\textwidth}
+		\centering
+		\includegraphics[width=0.95\linewidth,height=45mm,keepaspectratio]{img/menuconfig-minibot.png}
+		\caption{Configuraciones del Minibot}%
+		\label{fig:menuconfig-minibot}
+	\end{subfigure}\\
+	\begin{subfigure}[b]{0.5\textwidth}
+		\centering
+		\includegraphics[width=0.95\linewidth,height=45mm,keepaspectratio]{img/menuconfig-wifi.png}
+		\caption{Configuración de la red inalámbrica}%
+		\label{fig:menuconfig-wifi}
+	\end{subfigure}%
+	\begin{subfigure}[b]{0.5\textwidth}
+		\centering
+		\includegraphics[width=0.95\linewidth,height=45mm,keepaspectratio]{img/menuconfig-client.png}
+		\caption{Cambio a modo cliente}%
+		\label{fig:menuconfig-client}
+	\end{subfigure}\\
+	\begin{subfigure}[b]{0.5\textwidth}
+		\centering
+		\includegraphics[width=0.95\linewidth,height=45mm,keepaspectratio]{img/menuconfig-ssid.png}
+		\caption{Conectar a la red Minibot}%
+		\label{fig:menuconfig-ssid}
+	\end{subfigure}%
+	\begin{subfigure}[b]{0.5\textwidth}
+		\centering
+		\includegraphics[width=0.95\linewidth,height=45mm,keepaspectratio]{img/menuconfig-dhcp.png}
+		\caption{Configuración para obtención de IP automática via DHCP}%
+		\label{fig:menuconfig-dhcp}
+	\end{subfigure}%
+	\caption{configuración~del ESP~IDF}%
+	\label{fig:menuconfig}
+\end{figure}
+
+\medskip\noindent
+Finalmente, compile la solución con el siguiente comando
+\begin{Verbatim}[gobble=1]
+	idf.py build
+\end{Verbatim}
+
+
+
+\subsection{Carga en el integrado (flasheo)}
+Después de importar el ESP IDF conecte el ESP32 del minibot y ejecute el siguiente comando.
+\begin{Verbatim}[gobble=1]
+idf.py flash
+\end{Verbatim}
+
+Si lo desea, puede habilitar el monitor para observar el proceso de arranque del Minibot con el comando tras el flasheo
+\begin{Verbatim}[gobble=1]
+idf.py flash monitor
+\end{Verbatim}
+\noindent
+El minibot siempre imprime la direcció IP utilizada tras una conexión exitosa.
+
+
+\section{Prueba de comportamientos con PumaSimBot}
+\subsection{Prerrequisitos}
+\begin{enumerate}
+	\item Instale los siguientes paquetes
+	\begin{Verbatim}[gobble=2]
+		sudo apt install build-essential cmake libboost-all-dev libncurses-dev
+		sudo apt install python3 python3-tk python3-numpy
+	\end{Verbatim}
+
+	\item Si no lo ha hecho, clone el repositorio del Pumasimbot
+	\begin{Verbatim}[gobble=2]
+		cd ~/
+		git clone --depth 1 --branch ft/minibot https://github.com/kyordhel/pumasimbot.git
+		cd pumasimbot
+	\end{Verbatim}
+\end{enumerate}
+
+\subsection{Compilación}
+Edite el archivo \texttt{src/motion\_planner/GoTo\_State\_Machine.cpp}; particularmente la línea 605 donde deberá incluir la dirección IP del minibot.
+% \begin{lstlisting}[language=cpp]
+\begin{Verbatim}[gobble=1]
+ if( virbot_using_real_robot() ){
+     // Write down IP address of the robot here.
+     minibot_connect("192.168.1.102", 9000, 10);
+     if(!minibot_connected()) return -1;
+     float v; int p;
+     get_battery_charge(&v, &p);
+     fprintf(stderr, "Battery charge: %0.1fV (%d%%)", v, p);
+ }
+\end{Verbatim}
+% \end{lstlisting}
+
+
+Por último, ejecute los siguientes comandos para compilar el simulador
+\begin{Verbatim}[gobble=1]
+	mkdir -p build
+	cd build
+	cmake .. -DTCP_CLIPS60_FETCH_FROM_GIT=1 -DMINIBOT_FETCH_FROM_GIT=1 \
+	         -DMINIBOT_TCP_API_FETCH_FROM_GIT=1
+	make
+	cd ..
+\end{Verbatim}
+
+
+\subsection{Ejecución y prueba}
+
+La ejecución del simulador es reltivamente sencilla. Basta con usar el siguient comando
+\begin{Verbatim}[gobble=1]
+	xterm -hold -e "cd bin/gui && python3 pumasimbot.py 1" &
+\end{Verbatim}
+
+\cleardoublepage{}
+\section{Interfaz web}
+
+% \begin{figure}[H]
+\begin{wrapfigure}{r}{0.7\textwidth}
+	\centering
+	\includegraphics[width=0.95\linewidth,height=80mm,keepaspectratio]{img/web-control.png}
+	\caption{Interfaz web de control}%
+	\label{fig:web-control}
+\end{wrapfigure}
+% \end{figure}
+
+La interfaz web permite monitorear el estado del minibot y enviar comandos rápidos.
+Se accede directamente en la dirección IP asignada al minibot; por ejemplo \url{http://192.168.1.102}; o bien \url{192.168.1.102:80}.
+
+La interfaz web es minimalista y autoexplicativa. En ella podrá observar el estado de los sensores de proximidad (distancia/obstáculos), enviar comandos mv, establecer el PWM de los motores, y ejecutar comandos rápidos de movimiento como giros a la izquierda, derecha, avanzar y retroceder. Además se indica la posición estimada de la fuente de luz más intensa y el nivel de carga de la batería.
+
+Todas las peticiones viajan por GET, por lo que es posible obtener el estado del robot en formato JSON con una llamada a \texttt{minibot?cmd=<cmd>\&args=<args>}. Por ejemplo \url{http://192.168.1.102/minibot?cmd=sensors} devolverá un JSON con la información de todos los sensores del robot.
+De forma similar \url{http://192.168.1.102/minibot?cmd=mv&args=1.5709%200.1} hará que el robot gire 90\textsuperscript{o} a la izquierda y avance diez centímetros. % CHKTEX 15
+
+\begin{yellowbox}{Sin soporte para SSH}
+	Muchos navegadores reemplazan automáticamente las direcciones de web standard \texttt{http} por direcciones encriptadas en web seguro \texttt{https} que opera en el puerto 433.
+
+	La implementación actual sólo responde a peticiones realizadas en el puerto 80 para \texttt{http} y no incluye certificados de seguridad. Si obtiene un error 404, verifique que la dirección sea la correcta.
+\end{yellowbox}
+
+
+\cleardoublepage{}
+\section{Servidor tcp}
+El servidor TCP es el canal predeterminado para operar el minibot de forma rápida y eficiente.
+La conexión se realiza vía el puerto 9000 en la dirección IP asignada al minibot; por ejemplo \url{192.168.1.102:9000}.
+El protocolo es de dos vías: solicitud-respuesta. Los datagramas respectivos se muestran en las tablas~\Cref{tbl:request,tbl:reply}.
+
+\begin{table}[H]
+	\centering
+	\caption{Datagrama base de una solicitud}%
+	\label{tbl:request}
+	\begin{tabularx}{0.8\linewidth}{c l c c X}
+		\toprule
+		Offset & Contenido & Tipo   & Tamaño & Descripción \\
+		\midrule
+		0      & Id        & uint32 & 4 bytes & Identificador único del mensaje.  \\
+		4      & Tamaño    & uint32 & 4 bytes & Tamaño del mensaje en bytes.      \\
+		8      & Comando   & uint32 & 4 bytes & Comando a ejecutar.               \\
+		12     & Argumentos& ---    & Varía   & Opcional. Argumentos del comando. \\
+		\bottomrule
+	\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+	\centering
+	\caption{Datagrama base de una respuesta}%
+	\label{tbl:reply}
+	\begin{tabularx}{0.8\linewidth}{c l c c X}
+		\toprule
+		Offset & Contenido & Tipo   & Tamaño & Descripción \\
+		\midrule
+		0      & Id        & uint32 & 4 bytes & Identificador único del mensaje.  \\
+		4      & Tamaño    & uint32 & 4 bytes & Tamaño del mensaje en bytes.      \\
+		8      & Comando   & uint32 & 4 bytes & Comando a ejecutar.               \\
+		12     & Resultado &  bool  & 1 byte  & ¿Ejecución exitosa?               \\
+		13     & Argumentos& ---    & Varía   & Opcional. Valores de retorno.     \\
+		\bottomrule
+	\end{tabularx}
+\end{table}
+
+Cualquier paquete mal formado, incluyendo paquetes de menos de 12 bytes, o aquellos donde el tamaño no corresponda a la carga son descartados por el sistema y no generan respuesta. Un breviario de los comandos aceptados se muestran en la~\Cref{tbl:commands}:
+
+\begin{table}
+	\centering
+	\caption{Comandos soportados}%
+	\label{tbl:commands}
+	\newcommand{\timesf}[1]{$\text{\texttt{f}}\times#1$}
+	\begin{tabularx}{0.95\linewidth}{r l c c X}
+		\toprule
+		Código              & Comando   & Argumentos    & Retorno       & Descripción \\
+		\midrule
+			\(0\times0100\) & mv        & \texttt{ff}   & \texttt{fff}  & ViRbot mv: distancia (metros) y angulo (radianes) \\
+			\(0\times1000\) & Get PWM   &      ---      & \texttt{ffff} & Devuelve los valores de PWM establecidos en cada rueda\\
+			\(0\times1200\) & Set PWM   & \texttt{ff}   &      ---      & PWM para las ruedas izquierda y derecha \\
+			\(0\times1400\) & Set PWM   & \texttt{ffff} &      ---      & Establece los valores de PWM para las cuatro ruedas \\
+			\(0\times2000\) & Get speed &      ---      & \texttt{ffff} & No implementado \\
+			\(0\times2200\) & Set speed & \texttt{ff}   &      ---      & No implementado \\
+			\(0\times2400\) & Set speed & \texttt{ffff} &      ---      & No implementado \\
+			\(0\times4000\) & Read all  &      ---      &     Varía     & Lee todos los sensores\\
+			\(0\times4100\) & Read batt &      ---      & \texttt{ff}   & Lee el estado de la batería\\
+			\(0\times4200\) & Read dist &      ---      &     Varía     & Lee el anillo de sensores de distancia como LIDAR\\
+			\(0\times4300\) & Read floor&      ---      & \texttt{ffff} & Lee los sensores de piso\\
+			\(0\times4400\) & Read light&      ---      & \timesf{16}   & Lee el anillo de sensores de luz\\
+			\(0\times0000\) & STOP      &      ---      &      ---      & Cancela cualquier operación de movimiento\\
+		\bottomrule
+	\end{tabularx}
+	\\[1em]\raggedright
+	\noindent\textbf{Nota:} \texttt{f} implica un valor flotante de 32 bits.
+\end{table}
+
+\subsection{Comando \texttt{mv}}
+El robot gira y avanza.
+\par\noindent
+\begin{tabularx}{\linewidth}{p{1em} r c c X}
+	\multicolumn{5}{X}{Código $0\times0100$}\\
+	\multicolumn{5}{X}{Argumentos}\\
+	& 1 & 4 bytes & Punto flotante & La distancia a avanzar en metros \\
+	& 2 & 4 bytes & Punto flotante & El ángulo a girar en radianes \\
+	\multicolumn{5}{X}{Valores devueltos}\\
+	& 1 & 4 bytes & Punto flotante & Desplazamiento $\Delta{}x$ en metros \\
+	& 2 & 4 bytes & Punto flotante & Desplazamiento $\Delta{}y$ en metros \\
+	& 3 & 4 bytes & Punto flotante & Ángulo rotado $\Delta\theta{}$ en radianes \\
+\end{tabularx}
+
+
+
+\subsection{Comando \texttt{GetPWM}}
+Obtiene los ciclos de trabajo para el PWM de los motores del robot.
+
+\par\noindent
+\begin{tabularx}{\linewidth}{p{1em} r c c X}
+	\multicolumn{5}{X}{Código $0\times1000$}\\
+	\multicolumn{5}{X}{Argumentos}\\
+	&\multicolumn{4}{X}{Ninguno}\\
+	\multicolumn{5}{X}{Valores devueltos}\\
+	& 1 & 4 bytes & Punto flotante & Ciclo de trabajo del motor izquierdo en el intervalo \(\left[-1,1\right]\)\\ %CHKTEX 21
+	& 2 & 4 bytes & Punto flotante & Ciclo de trabajo del motor derecho en el intervalo \(\left[-1,1\right]\)\\ %CHKTEX 21
+	& 3 & 4 bytes & Punto flotante & Ciclo de trabajo del motor frontal en el intervalo \(\left[-1,1\right]\)\\ %CHKTEX 21
+	& 4 & 4 bytes & Punto flotante & Ciclo de trabajo del motor trasero en el intervalo \(\left[-1,1\right]\)\\ %CHKTEX 21
+\end{tabularx}
+
+
+\subsection{Comando \texttt{SetPWM2}}
+Establece los ciclos de trabajo para el PWM de los motores laterales del robot.
+
+\par\noindent
+\begin{tabularx}{\linewidth}{p{1em} r c c X}
+	\multicolumn{5}{X}{Código $0\times1200$}\\
+	\multicolumn{5}{X}{Argumentos}\\
+	& 1 & 4 bytes & Punto flotante & Ciclo de trabajo del motor izquierdo en el intervalo \(\left[-1,1\right]\)\\ %CHKTEX 21
+	& 2 & 4 bytes & Punto flotante & Ciclo de trabajo del motor derecho en el intervalo \(\left[-1,1\right]\)\\ %CHKTEX 21
+	\multicolumn{5}{X}{Valores devueltos}\\
+	&\multicolumn{4}{X}{Ninguno}\\
+\end{tabularx}
+
+
+
+\subsection{Comando \texttt{SetPWM4}}
+Establece los ciclos de trabajo para el PWM de todos motores del robot.
+
+\par\noindent
+\begin{tabularx}{\linewidth}{p{1em} r c c X}
+	\multicolumn{5}{X}{Código $0\times1400$}\\
+	\multicolumn{5}{X}{Argumentos}\\
+	& 1 & 4 bytes & Punto flotante & Ciclo de trabajo del motor izquierdo en el intervalo \(\left[-1,1\right]\)\\ %CHKTEX 21
+	& 2 & 4 bytes & Punto flotante & Ciclo de trabajo del motor derecho en el intervalo \(\left[-1,1\right]\)\\ %CHKTEX 21
+	& 3 & 4 bytes & Punto flotante & Ciclo de trabajo del motor frontal en el intervalo \(\left[-1,1\right]\)\\ %CHKTEX 21
+	& 4 & 4 bytes & Punto flotante & Ciclo de trabajo del motor trasero en el intervalo \(\left[-1,1\right]\)\\ %CHKTEX 21
+	\multicolumn{5}{X}{Valores devueltos}\\
+	&\multicolumn{4}{X}{Ninguno}\\
+\end{tabularx}
+
+
+
+% \subsection{Comando \texttt{GetSpeed}}
+% \subsection{Comando \texttt{SetSpeed2}}
+% \subsection{Comando \texttt{SetSpeed4}}
+\subsection{Comando \texttt{ReadAll}}
+Lee todos los sensores en el siguiente orden: batería, sensores de piso, sensores de luz, sensores de obstáculos.
+
+\par\noindent
+\begin{tabularx}{\linewidth}{p{1em} r c c X}
+	\multicolumn{5}{X}{Código $0\times4000$}\\
+	\multicolumn{5}{X}{Argumentos}\\
+	&\multicolumn{4}{X}{Ninguno}\\
+	\multicolumn{5}{X}{Valores devueltos}\\
+	% Batt
+	& 1 & 4 bytes & Punto flotante & Voltaje de la batería\\
+	& 2 & 1 byte  & Entero signado & Porcentaje de carga de la batería\\
+	% Floor
+	& 3 & 4 bytes & Punto flotante & Valor normalizado del sensor de piso 0 \\
+	& 4 & 4 bytes & Punto flotante & Valor normalizado del sensor de piso 1 \\
+	& 5 & 4 bytes & Punto flotante & Valor normalizado del sensor de piso 2 \\
+	& 6 & 4 bytes & Punto flotante & Valor normalizado del sensor de piso 3 \\
+	% Light
+	& 7 & 4 bytes & Punto flotante & Ángulo en radianes del primer sensor sensor de luz \\
+	& 8 & 4 bytes & Punto flotante & Valor normalizado del primer sensor de luz \\
+	\multicolumn{5}{c}{\dots{}}\\
+	&21 & 4 bytes & Punto flotante & Ángulo en radianes del octavo sensor sensor de luz \\
+	&22 & 4 bytes & Punto flotante & Valor normalizado del octavo sensor de luz \\
+	% Dist
+	&23 & 2 bytes & Entero no signado & Número de tuplas reportadas \\
+	&24 & 4 bytes & Punto flotante & Ángulo en radianes del primer sensor de obtáculos \\
+	\multicolumn{5}{c}{\dots{}}\\
+	&$22+2n$&4 bytes & Punto flotante & Ángulo en radianes del n-ésimo sensor de obtáculos \\
+	&$23+2n$&4 bytes& Punto flotante& Valor normalizado del n-ésimo sensor de obtáculos \\
+\end{tabularx}
+
+
+
+\subsection{Comando \texttt{ReadBatt}}
+Lee la carga de la batería.
+Cuando el comando falla los valores devueltos son -1.
+
+\par\noindent
+\begin{tabularx}{\linewidth}{p{1em} r c c X}
+	\multicolumn{5}{X}{Código $0\times4100$}\\
+	\multicolumn{5}{X}{Argumentos}\\
+	&\multicolumn{4}{X}{Ninguno}\\
+	\multicolumn{5}{X}{Valores devueltos}\\
+	& 1 & 4 bytes & Punto flotante & Voltaje de la batería en voltios, sensado por la tarjeta controladora de los motores \\
+	& 2 & 1 byte  & Entero signado & Porcentaje de carga de la batería en nivel operativo proporcional al rango $[5.5, 7.2]$V equivalente a $[0, 100]$\% \\
+\end{tabularx}
+
+
+\subsection{Comando \texttt{ReadDist}}
+Lee el anillo de sensores de distancia para detectar obstáculos.
+Cuando el comando falla los valores devueltos son -1.
+
+\par\noindent
+\begin{tabularx}{\linewidth}{p{1em} r c c X}
+	\multicolumn{5}{X}{Código $0\times4200$}\\
+	\multicolumn{5}{X}{Argumentos}\\
+	&\multicolumn{4}{X}{Ninguno}\\
+	\multicolumn{5}{X}{Valores devueltos}\\
+	& 1 & 2 bytes & Entero no signado & Número de tuplas reportadas \\
+	& 2 & 4 bytes & Punto flotante & Ángulo en radianes del primer sensor de obtáculos. \\
+	& 3 & 4 bytes & Punto flotante & Valor normalizado del primer sensor de obtáculos en el rango $[0, 1]$ \\
+	& 4 & 4 bytes & Punto flotante & Ángulo en radianes del segundo sensor sensor de obtáculos\\
+	& 5 & 4 bytes & Punto flotante & Valor normalizado del segundo sensor de obtáculos en el rango $[0, 1]$ \\
+	\multicolumn{5}{c}{\dots{}}\\
+	&$2n$&4 bytes & Punto flotante & Ángulo en radianes del n-ésimo sensor de obtáculos. \\
+	&$2n+1$&4 bytes& Punto flotante& Valor normalizado del n-ésimo sensor de luz en el rango $[0, 1]$ \\
+\end{tabularx}
+
+
+
+\subsection{Comando \texttt{ReadFloor}}
+Lee los sensores de piso en el orden indicado en la configuración del minibot.
+Cuando el comando falla los valores devueltos son -1.
+
+\par\noindent
+\begin{tabularx}{\linewidth}{p{1em} r c c X}
+	\multicolumn{5}{X}{Código $0\times4300$}\\
+	\multicolumn{5}{X}{Argumentos}\\
+	&\multicolumn{4}{X}{Ninguno}\\
+	\multicolumn{5}{X}{Valores devueltos}\\
+	& 1 & 4 bytes & Punto flotante & Valor normalizado del sensor infrarrojo 0 en el rango $[0, 1]$ \\
+	& 2 & 4 bytes & Punto flotante & Valor normalizado del sensor infrarrojo 1 en el rango $[0, 1]$ \\
+	& 3 & 4 bytes & Punto flotante & Valor normalizado del sensor infrarrojo 2 en el rango $[0, 1]$ \\
+	& 4 & 4 bytes & Punto flotante & Valor normalizado del sensor infrarrojo 3 en el rango $[0, 1]$ \\
+\end{tabularx}
+
+\subsection{Comando \texttt{ReadLight}}
+Lee los sensores de luz de la torreta.
+Los sensores ignorados devuelven valores -1.
+
+\par\noindent
+\begin{tabularx}{\linewidth}{p{1em} r c c X}
+	\multicolumn{5}{X}{Código $0\times4400$}\\
+	\multicolumn{5}{X}{Argumentos}\\
+	&\multicolumn{4}{X}{Ninguno}\\
+	\multicolumn{5}{X}{Valores devueltos}\\
+	& 1 & 4 bytes & Punto flotante & Ángulo en radianes del primer sensor sensor de luz. \\
+	& 2 & 4 bytes & Punto flotante & Valor normalizado del primer sensor de luz en el rango $[0, 1]$ \\
+	& 3 & 4 bytes & Punto flotante & Ángulo en radianes del segundo sensor sensor de luz\\
+	& 4 & 4 bytes & Punto flotante & Valor normalizado del segundo sensor de luz en el rango $[0, 1]$ \\
+	\multicolumn{5}{c}{\dots{}}\\
+	&15 & 4 bytes & Punto flotante & Ángulo en radianes del octavo sensor sensor de luz \\
+	&16 & 4 bytes & Punto flotante & Valor normalizado del octavo sensor de luz en el rango $[0, 1]$ \\
+\end{tabularx}
+
+
+
+\subsection{Comando \texttt{STOP}}
+Cancela la ejecución de un comando mv y para los motores.
+
+\par\noindent
+\begin{tabularx}{\linewidth}{p{1em} r c c X}
+	\multicolumn{5}{X}{Código $0\times0000$}\\
+	\multicolumn{5}{X}{Argumentos}\\
+	&\multicolumn{4}{X}{Ninguno}\\
+	\multicolumn{5}{X}{Valores devueltos}\\
+	&\multicolumn{4}{X}{Ninguno}\\
+\end{tabularx}
+
+\end{document}
