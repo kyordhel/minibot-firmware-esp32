@@ -70,9 +70,6 @@ namespace ns = minibot::settings;
 	#endif
 #endif
 
-// std::string ns::WIFI_SSID = "INFINITUM065E";
-// std::string ns::WIFI_PASS = "8173766338";
-
 
 // Sensors
 // float    ns::SEN_DIST[DIST_SENSOR_COUNT]  = {120, 90, 60, 30, 0, 330, -1, -1, 300, 270, 240, 210, 180, 150, -1, -1};
@@ -85,13 +82,13 @@ float    ns::SEN_LIGHT[] = {90,45,0,315,270,225,180,135};
 
 
 #ifdef CONFIG_PWM_MIN
-	uint16_t ns::PWM_MIN      = PWM_MIN;
+	uint16_t ns::PWM_MIN      = CONFIG_PWM_MIN;
 #else
 	uint16_t ns::PWM_MIN      = 1800;
 #endif
 
 #ifdef CONFIG_PWM_MAX
-	uint16_t ns::PWM_MAX      = PWM_MAX;
+	uint16_t ns::PWM_MAX      = CONFIG_PWM_MAX;
 #else
 	uint16_t ns::PWM_MAX      = 3000;
 #endif
