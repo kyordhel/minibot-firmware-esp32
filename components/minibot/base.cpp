@@ -240,8 +240,6 @@ float Base::moveX(float distance) {
 	e0 = readEncodersAbs();
 	// Motors l and r advance towards -x
 	ef = e0 + Encoders(0, 0, estSteps, estSteps);
-	printf("Encoders: %ld %ld %ld %ld\n", e0.front, e0.back, e0.left, e0.right);
-	printf("EncFinal: %ld %ld %ld %ld\n", ef.front, ef.back, ef.left, ef.right);
 
 	int maxTime = estimateMoveTimeMs(estSteps) + 1;
 
@@ -252,15 +250,10 @@ float Base::moveX(float distance) {
 		errI+= err;        // Integral
 		errD = err - err_; // Differential
 
-		printf("ek:  % 4ld % 4ld % 4ld % 4ld\n", ek.front, ek.back, ek.left, ek.right);
-		printf("err: % 4ld % 4ld % 4ld % 4ld\n", err.front, err.back, err.left, err.right);
-		printf("ef:  % 4ld % 4ld % 4ld % 4ld\n", ef.front, ef.back, ef.left, ef.right);
 		pwml = 0.85 * dKP * err.left  + dKI * errI.left  + dKD * errD.left;
 		pwmr = 0.85 * dKP * err.right + dKI * errI.right + dKD * errD.right;
 
 		errSum = std::abs(err.left) + std::abs(err.right);
-		printf("pwm: % 1.3f % 1.3f\n", pwml, pwmr);
-		printf("errsum: %0.1lf\n", errSum);
 		if ( (errSum / 2.0f) < 100.0f ) break;
 
 		setPwm(pwml, pwmr, 0, 0);
@@ -270,10 +263,7 @@ float Base::moveX(float distance) {
 	stop();
 	waitStop();
 
-	Encoders ef2 = readEncodersAbs();
 	Encoders diff = readEncodersAbs() - e0;
-	printf("EncFinal: %ld %ld %ld %ld\n", ef2.front, ef2.back, ef2.left, ef2.right);
-	printf("EncDiff:  %ld %ld %ld %ld\n", diff.front, diff.back, diff.left, diff.right);
 	return (diff.left + diff.right) / (2 * 6756.76f);
 }
 
@@ -306,7 +296,6 @@ float Base::rotate(float angle) {
 		pwmr = 0.7 * dKP * err.back  + dKI * errI.back  + dKD * errD.back;
 
 		errSum = std::abs(err.front) + std::abs(err.back) + std::abs(err.left) + std::abs(err.right);
-		printf("errsum: %0.1lf\n", errSum);
 		if ( (errSum / 4.0) < 100.0f ) break;
 
 		setPwm(pwml, pwmr, pwmf, pwmb);
